@@ -7,6 +7,12 @@ actual Twitter API credentials or real Twitter interactions.
 
 import asyncio
 import os
+import sys
+from pathlib import Path
+
+# Add src to path for imports
+sys.path.append(str(Path(__file__).parent.parent))
+
 from dotenv import load_dotenv
 
 from src.services.x_handler import XHandler
@@ -170,7 +176,7 @@ def print_setup_instructions():
     print("   - X_API_KEY, X_API_SECRET, X_ACCESS_TOKEN, X_ACCESS_TOKEN_SECRET")
     print("   - HUGGING_FACE_API_KEY")
     print("   - CONVERT_BET_API_KEY")
-    print("3. Run: python test_bot.py")
+    print("3. Run: python tests/test_bot.py")
     print("\n💡 NOTE: Tests will run with mock data if API keys are not provided")
     print("="*60)
 

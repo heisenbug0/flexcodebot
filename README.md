@@ -105,7 +105,7 @@ FlexCode Bot (@FlexCodeBot) automatically:
 
 5. **Test the bot**
    ```bash
-   python test_bot.py
+   python tests/test_bot.py
    ```
 
 ### API Keys Setup
@@ -129,7 +129,7 @@ FlexCode Bot (@FlexCodeBot) automatically:
 
 ### 1. Local Testing (Without Twitter API)
 ```bash
-python test_bot.py
+python tests/test_bot.py
 ```
 
 This will test:
@@ -250,7 +250,7 @@ pytest tests/test_api.py
 pytest --cov=src tests/
 
 # Test bot functionality
-python test_bot.py
+python tests/test_bot.py
 ```
 
 ### Sample Test Inputs
@@ -299,8 +299,8 @@ flexcode/
 │   ├── test_nlp.py              # NLP tests
 │   ├── test_converter.py        # Converter tests
 │   ├── test_api.py              # API tests
+│   ├── test_bot.py              # Bot functionality tests
 ├── logs/
-├── test_bot.py                  # Bot testing script
 ├── .env.example                 # Environment variables template
 ├── requirements.txt             # Dependencies
 ├── Procfile                     # Render.com deployment
@@ -350,7 +350,7 @@ The application follows a clean, modular architecture:
 ### Debugging
 
 1. Check application logs in `logs/app.log`
-2. Use the test script: `python test_bot.py`
+2. Use the test script: `python tests/test_bot.py`
 3. Monitor bot status via `/bot/status` endpoint
 4. Test individual components via API endpoints
 
@@ -371,7 +371,7 @@ This project is built for the Bolt hackathon and follows all hackathon rules inc
 
 For issues or questions:
 1. Check the logs in `logs/app.log`
-2. Run the test script: `python test_bot.py`
+2. Run the test script: `python tests/test_bot.py`
 3. Review the troubleshooting section
 4. Verify that all API keys are correctly configured
 5. Ensure that all dependencies are installed
@@ -390,7 +390,7 @@ This project complies with Bolt hackathon rules:
 
 1. **Setup**: Copy `.env.example` to `.env` and add your API keys
 2. **Install**: `pip install -r requirements.txt`
-3. **Test**: `python test_bot.py`
+3. **Test**: `python tests/test_bot.py`
 4. **Run**: `uvicorn src.api.main:app --reload`
 5. **Deploy**: Push to Render.com and start the bot via `/bot/start`
 6. **Use**: Tweet `@FlexCodeBot Convert Stake code ABC123 to SportyBet`

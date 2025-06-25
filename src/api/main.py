@@ -142,17 +142,13 @@ async def stop_bot() -> Dict[str, str]:
 
 @app.post("/test/mention")
 async def test_mention_processing(
-    tweet_id: str,
-    user_handle: str,
-    message_text: str
+    request: Dict[str, str]
 ) -> Dict[str, str]:
     """
     Test mention processing manually (for development/testing).
     
     Args:
-        tweet_id: Test tweet ID
-        user_handle: Test user handle
-        message_text: Test message text
+        request: Dict with tweet_id, user_handle, message_text
     
     Returns:
         Processing result
@@ -161,7 +157,11 @@ async def test_mention_processing(
         raise HTTPException(status_code=400, detail="Bot is not running")
     
     try:
-        await bot_manager.bot.process_manual_mention(tweet_id, user_handle, message_text)
+        await bot_manager.bot.process_manual_mention(
+            request["tweet_id"],
+            request["user_handle"], 
+            request["message_text"]
+        )
         return {"message": "Mention processed successfully"}
     except Exception as e:
         logger.error(f"Failed to process test mention: {str(e)}")
