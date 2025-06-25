@@ -20,6 +20,7 @@ from ..models.entities import (
 from ..services.x_handler import XHandler
 from ..services.nlp_processor import NLPProcessor
 from ..services.bet_converter import BetConverter
+from ..bot.twitter_bot import bot_manager
 from ..utils.logger import get_logger
 from .dependencies import (
     get_x_handler,
@@ -34,7 +35,27 @@ logger = get_logger(__name__)
 async def lifespan(app: FastAPI):
     """Application lifespan manager for startup and shutdown events."""
     logger.info("FlexCode Bot starting up...")
+    
+    # Start the Twitter bot monitoring
+    try:
+        x_handler = get_x_handler()
+        nlp_processor = get_nlp_processor()
+        bet_converter = get_bet_converter()
+        
+        bot_manager.start_bot(x_handler, nlp_processor, bet_converter)
+        logger.info("Twitter bot monitoring started")
+    except Exception as e:
+        logger.error(f"Failed to start Twitter bot: {str(e)}")
+    
     yield
+    
+    # Stop the Twitter bot
+    try:
+        bot_manager.stop_bot()
+        logger.info("Twitter bot monitoring stopped")
+    except Exception as e:
+        logger.error(f"Error stopping Twitter bot: {str(e)}")
+    
     logger.info("FlexCode Bot shutting down...")
 
 
@@ -64,7 +85,87 @@ async def health_check() -> HealthResponse:
         HealthResponse: Server status information
     """
     logger.info("Health check requested")
-    return HealthResponse(status="ok", message="FlexCode Bot is running")
+    bot_status = bot_manager.get_bot_status()
+    
+    return HealthResponse(
+        status="ok", 
+        message=f"FlexCode Bot is running. Twitter bot status: {bot_status['status']}"
+    )
+
+
+@app.get("/bot/status")
+async def get_bot_status() -> Dict[str, Any]:
+    """
+    Get Twitter bot status.
+    
+    Returns:
+        Dict with bot status information
+    """
+    return bot_manager.get_bot_status()
+
+
+@app.post("/bot/start")
+async def start_bot(
+    x_handler: XHandler = Depends(get_x_handler),
+    nlp_processor: NLPProcessor = Depends(get_nlp_processor),
+    bet_converter: BetConverter = Depends(get_bet_converter)
+) -> Dict[str, str]:
+    """
+    Manually start the Twitter bot.
+    
+    Returns:
+        Status message
+    """
+    try:
+        bot_manager.start_bot(x_handler, nlp_processor, bet_converter)
+        return {"message": "Twitter bot started successfully"}
+    except Exception as e:
+        logger.error(f"Failed to start bot: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/bot/stop")
+async def stop_bot() -> Dict[str, str]:
+    """
+    Manually stop the Twitter bot.
+    
+    Returns:
+        Status message
+    """
+    try:
+        bot_manager.stop_bot()
+        return {"message": "Twitter bot stopped successfully"}
+    except Exception as e:
+        logger.error(f"Failed to stop bot: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/test/mention")
+async def test_mention_processing(
+    tweet_id: str,
+    user_handle: str,
+    message_text: str
+) -> Dict[str, str]:
+    """
+    Test mention processing manually (for development/testing).
+    
+    Args:
+        tweet_id: Test tweet ID
+        user_handle: Test user handle
+        message_text: Test message text
+    
+    Returns:
+        Processing result
+    """
+    if not bot_manager.bot:
+        raise HTTPException(status_code=400, detail="Bot is not running")
+    
+    try:
+        await bot_manager.bot.process_manual_mention(tweet_id, user_handle, message_text)
+        return {"message": "Mention processed successfully"}
+    except Exception as e:
+        logger.error(f"Failed to process test mention: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @app.post("/process_mention", response_model=BetCodeResponse)
